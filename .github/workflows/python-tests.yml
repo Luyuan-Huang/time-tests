@@ -1,27 +1,42 @@
-name: Python package
+name: Python CI - Time Tests
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.10", "3.13"]
 
     steps:
-      - uses: actions/checkout@v4
+      # 1️⃣ Checkout 仓库代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      # 2️⃣ 设置 Python 版本
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
+      # 3️⃣ 安装依赖
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # 安装 pytest
           pip install pytest
+          # 如果有 requirements.txt，一起安装
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Test with pytest
+      # 4️⃣ 运行测试
+      - name: Run pytest for time-tests
         run: |
-          pytest time-tests/ --maxfail=1 --disable-warnings -v
+          # 指定目录 ./time-tests/，输出详细信息，遇到第一个失败就停止
+          pytest ./time-tests/ --maxfail=1 --disable-warnings -v
